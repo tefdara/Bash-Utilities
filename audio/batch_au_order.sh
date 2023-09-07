@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Audio file organiser. It splits audio folders based on duratoin. Use -name for custom name
+# Audio file organiser. It splits audio folders based on duration. Use -name for custom name
 # Bash shortcut -> batchorder
 # You can use echo to add it to ~/.zprofile or ~/.bash_profile or ~/.bashrc, depending on your system
 # echo "alias batchorder=\"bash ~/path-to-script/batch_au_order.sh\"" >> ~/.zprofile && source ~/.zprofile

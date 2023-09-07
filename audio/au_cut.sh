@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Requires aubiocut to be installed
+# https://github.com/aubio/aubio
+# pip install aubio
+
 # This script takes runs aubiocut on a file with different presets
 # It takes in the file name as the firts argument, the preset as the 2nd and threshold as 3d with -t or --threshold
 # Example usage: aucut input_file.wav -t 0.5 -p 1
@@ -74,6 +78,9 @@ case $preset_number in
   6)
     aubiocut_options="-B 1024 -H 1024 -O hfc"
     ;;
+  7)
+  aubiocut_options="-B 1024 -H 128"
+  ;;
   *)
     echo "Error: Invalid preset number."
     exit 2

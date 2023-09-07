@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Runs SOX to trim silence add fades, normalise and rename files
+# Requires sox to be installed
+# pip install sox
 
 # Bash shortcut -> trimfade
 # You can use echo to add it to ~/.zprofile or ~/.bash_profile or ~/.bashrc, depending on your system

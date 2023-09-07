@@ -1,6 +1,11 @@
 #!/bin/bash
 
 # This script finds all audio files of a given format in a given folder and copies them into a new directory provided by the user.
+# It takes in the format as the first argument, the source directory as the 2nd and destination directory as 3d
+# The destination directory is optional and if not provided, the script will create a new directory with the format name in the source directory
+# Example usage: copyaudiofiles -f .wav ~/Desktop ~/Desktop/destination
+# Example usage: copyaudiofiles -f .wav ~/Desktop
+
 
 # Bash shortcut -> gatherfiles
 # You can use echo to add it to ~/.zprofile or ~/.bash_profile or ~/.bashrc, depending on your system
@@ -25,11 +30,16 @@ if [ "$source_path" = "$home_dir" ] || [ "$destination_path" = "$home_dir" ]; th
   exit 2
 fi
 
-# Set default destination directory if not provided
+# Set default destination directory if not provided and use the format as the directory name without the dot
 if [ -z "$4" ]; then
-  destination_path="~/Gathered Files"
+  destination_path="${source_path}/Gathered Files/${format:1}"
 else
   destination_path="$4"
+fi
+
+# Create destination directory if it doesn't exist
+if [ ! -d "$destination_path" ]; then
+  mkdir -p "$destination_path"
 fi
 
 # Read audio files into an array using a while loop

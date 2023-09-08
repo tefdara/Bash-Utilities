@@ -9,14 +9,16 @@
 # echo "alias trimfade=\"bash ~/path-to-script/sox_trim_fade.sh\"" >> ~/.zprofile && source ~/.zprofile
 
 usage() {
-  echo "Usage: trimfade path [--name new_file_name] [--rev] [-l preset] [-hpf highpass_filter_frequency]"
+  echo "Usage: trimfade path [-t audio_format] [--name new_file_name] [--rev] [-l preset] [-hpf highpass_filter_frequency]"
   echo
-  echo "Example usage : trimfade /audioFolder --name bass_transient -l short -hpf 60"
+  echo "Example usage : trimfade /audioFolder -t mp3 --name bass_transient -l short -hpf 60"
   echo "path: Directory path of the audio files."
+  echo "-t: Audio file type to process. Default is 'wav'."
   echo "--name: Provide a custom name for processed files. Default is the original name."
   echo "--rev: Add this flag to reverse the audio."
-  echo "-l: Choose a length preset for triming. Options are 'long', 'short', and 'stich'."
-  echo "-hpf: Define the highpass filter frequency. If not provided, the default is 40 Hz."
+  echo "-l: Choose a length preset for triming. Options are 'long', 'short', and 'stich'. 
+        Long applies a 100ms fade in and out, short applies a 20ms fade in and out, and stich applies a 100ms fade in and out with no silence trimming. Default is 'long'."
+  echo "--hpf: Define the highpass filter frequency. If not provided, the default is 40 Hz."
 }
 
 if [ -z "$1" ]; then
@@ -32,14 +34,13 @@ fi
 search_path="$1"
 shift
 
-
-reverse_option=""
-custom_name=""
-preset=""
-highpass_filter_frequency=40
-
+audio_format="wav"
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    -t)
+      audio_format="$2"
+      shift 2
+      ;;
     --name)
       custom_name="$2"
       shift 2
@@ -52,7 +53,7 @@ while [ "$#" -gt 0 ]; do
       preset="$2"
       shift 2
       ;;
-    -hpf)
+    --hpf)
       highpass_filter_frequency="$2"
       shift 2
       ;;
@@ -72,18 +73,18 @@ if [ "$search_path" = "$home_dir" ]; then
   exit 2
 fi
 
-audio_files=($(find "$search_path" -type f -name '*.wav'))
+audio_files=($(find "$search_path" -type f -name "*.$audio_format"))
 
 if [[ ${#audio_files[@]} -eq 0 ]]; then
-    echo "No audio files found! Make sure you pass the right directory";
+    echo "No audio files found! Make sure you pass the right directory and format";
     exit 1
 fi
 
 counter=1
 while IFS= read -r -d $'\0' file; do
   # Trim silence and add 20ms fade
-  temp_filepath="${search_path}/temp_${counter}.wav"
-  sox_command="gain -n -3 highpass ${highpass_filter_frequency} "
+  temp_filepath="${search_path}/temp_${counter}.$audio_format"
+  sox_command="gain -n -3 -b 24 highpass ${highpass_filter_frequency} "
 
   case "$preset" in
     long)
@@ -120,10 +121,10 @@ while IFS= read -r -d $'\0' file; do
 
   # Use custom name or remove everything after the underscore
   if [ -n "$custom_name" ]; then
-    new_filename="${custom_name}_${counter}.wav"
+    new_filename="${custom_name}_${counter}.$audio_format"
   else
     filename=$(basename "$file")
-    new_filename="${filename%%_*}_${counter}.wav"
+    new_filename="${filename%%_*}_${counter}.$audio_format"
   fi
 
   # Rename the file
@@ -135,22 +136,4 @@ while IFS= read -r -d $'\0' file; do
 
   # Increment the counter
   counter=$((counter + 1))
-done < <(find "$search_path" -type f -name '*.wav' -print0)
-
-
-
-
-
-# find "$search_path" -type f \( -iname "*.mp3" -o -iname "*.wav" -o -iname "*.m4a" \) -exec sh -c '
-#   for file do
-#     output_file="${file%.*}_trimmed.${file##*.}"
-#     sox "$file" "$output_file" gain -n -3 silence 1 0.2 0.5% -1 0.2 0.5% -b 24 1% fade t 0:0:0.02t reverse fade t 0:0:0.02t reverse pad 0.02 0.02;
-#     rm -f "$file"
-#     echo "Processed $file -> $output_file"
-#      let COUNT++
-#      done
-# ' sh {} +
-
-# printf "Processed file count = %d\n" $COUNT 
-
-
+done < <(find "$search_path" -type f -name "*.$audio_format" -print0)

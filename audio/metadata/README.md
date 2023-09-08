@@ -1,4 +1,4 @@
-# Sound File Metadata
+# Audio Metadata
 
 If you do a lot of recordings and then chop them up and rename the files, sometime it helps to maintain certain type of information related to how this sound was made in the first place. This script adds metadata to all audio files in a given directory. The metadata includes the filename, sample rate, bit rate, duration, and any custom comments specified by the user.
 
@@ -28,6 +28,7 @@ Each output file will have the following metadata:
 - `Duration`: The duration of the input file.
 - Any custom comments specified by the user.
 
+The information above is meant to preserve the original stats of the file if any of them change at any point.
 ## Examples
 
 ```shell

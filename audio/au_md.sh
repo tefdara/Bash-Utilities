@@ -91,7 +91,6 @@ for file in "${audio_files[@]}"; do
                         "
   
   # add a number of spaces to the beginning of each line
-  comments_string=$(echo "$comments_string" | sed 's/^/                        /')
   if [ ${#custom_comments[@]} -gt 0 ]; then
     comments_string="$comments_string"
     for comment in "${custom_comments[@]}"; do

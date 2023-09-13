@@ -4,8 +4,9 @@ If you do a lot of recordings and then chop them up and rename the files, someti
 
 ## Requirements
 
-- `ffmpeg` (https://ffmpeg.org/)
-- `ffprobe` (https://ffmpeg.org/ffprobe.html)
+- [ffmpeg] (https://ffmpeg.org/)
+- [ffprobe] (https://ffmpeg.org/ffprobe.html)
+- [mediainfo] (https://mediaarea.net/en/MediaInfo)
 
 ## Usage
 

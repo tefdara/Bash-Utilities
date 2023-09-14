@@ -11,7 +11,7 @@ _amdt_complete_input_file() {
   local cur=${COMP_WORDS[COMP_CWORD]}
   COMPREPLY=( $(compgen -f -- "$cur") )
 }
-complete -F _amdt_complete_input_file -o filenames -o nospace amdt.sh
+
 
 
 usage() {

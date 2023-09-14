@@ -24,6 +24,7 @@ Example usage : amdt /audioFolder -c "This is a comment"
 - `-mt, --metadata-template` : Specify a metadata template file. The script will use the template to generate the metadata string.
      The template file should be a text file with one line per comment with values separated by a colon.
      For variables that you would like to extract from the audio file, use the following format:`custom_name: {variable_name}`.
+     
      Example:
      `source_file_name`: `{source_file_name}`
      `Tip`: you can override the default variable names. Note that if you redefine any of the default variables, the script will assume a custom config is being used and won't add any of the default comments:

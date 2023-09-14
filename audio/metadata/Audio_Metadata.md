@@ -12,30 +12,23 @@ If you do a lot of recordings and then chop them up and rename the files, someti
 
 ```shell
 Usage: ./amdt.sh [-c comment] [-d] [-i input_file] [-l] [-mt metadata_template] [-s] path
-
 Example usage : amdt /audioFolder -c "This is a comment"
-
-path: Directory path of the audio files.
--c: Optional comment to add to the metadata string. Can be used multiple times to add multiple comments.
--d: Disable default comment: source_file_name, source_sample_rate, source_bit_depth, source_channels, source_creation_date
--i: Specify a single file to process.
--l: Log the current comments in the metadata string.
--s: Show the available streams in the file, i.e. the audio streams containing the sample rate, bit depth, etc.
--mt: Specify a metadata template file. The script will use the template to generate the metadata string.
-     he template file should be a text file with one line per comment with values separated by a colon.
-     For variables that you would like to extract from the audio file, use the following format: {variable_name}
-     Example:
-     source_file_name: {source_file_name}
-     Tip: you can override the default variable names. Note that if you redefine any of the default variables, the script will assume a custom config is being used and won't add any of the default comments:
-     bit-depth: {bits_per_sample}
-     To see the list of available variables, use the -s flag.
 ```
 
-- `path`: The path to the directory containing the audio files.
-- `-c comment`: Optional comment to add to the metadata string. Can be used multiple times to add multiple comments.
-- `-l log`: Logs current comments in the metadata string.
-- `-s stream`: Show all the streams in the file"
-- `dd` : Disable default comments; source_file_name, source_sample_rate, source_bit_depth, source_channels, source_creation_date
+- `path` : Directory path of the audio files.
+- `-c, --comment` : Optional comment to add to the metadata string. Can be used multiple times to add multiple comments.
+- `-dd, --disable-defaults` : Disables the default comment: source_file_name, source_sample_rate, source_bit_depth, source_channels, source_creation_date
+- `-i, --input-file` : Specify a single file to process.
+- `-l, --log` : Log the current comments in the metadata string.
+- `-s, --show-streams` : Show the available streams in the file, i.e. the audio streams containing the sample rate, bit depth, etc.
+- `-mt, --metadata-template` : Specify a metadata template file. The script will use the template to generate the metadata string.
+     The template file should be a text file with one line per comment with values separated by a colon.
+     For variables that you would like to extract from the audio file, use the following format: {variable_name}
+     Example:
+     `source_file_name`: `{source_file_name}`
+     `Tip`: you can override the default variable names. Note that if you redefine any of the default variables, the script will assume a custom config is being used and won't add any of the default comments:
+     `bit-depth`: `{bits_per_sample}`
+     To see the list of available variables, use the `-s` flag.
 
 ## Output
 

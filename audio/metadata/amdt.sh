@@ -15,16 +15,16 @@ _amdt_complete_input_file() {
 
 
 usage() {
-  echo "Usage: amdt [-c comment] [-d] [-i input_file] [-l] [-mt metadata_template] [-s] path"
+  echo "Usage: amdt [-c comment] [--disable-defaults] [--input-file input_file] [-l] [--metadata-template metadata_template] [-s] path"
   echo
   echo "Example usage : amdt /audioFolder -c \"This is a comment\""
   echo "path: Directory path of the audio files."
-  echo "-c: Optional comment to add to the metadata string. Can be used multiple times to add multiple comments."
-  echo "-d: Disable default comments; source_file_name, source_sample_rate, source_bit_depth, source_channels, source_creation_date"
-  echo "-i: Specify a single file to process."
-  echo "-l: Log the current comments in the metadata string."
-  echo "-s: Show the available streams in the file, i.e. the audio streams containing the sample rate, bit depth, etc."
-  echo "-mt: Specify a metadata template file. The script will use the template to generate the metadata string."
+  echo "-c, --comment: Optional comment to add to the metadata string. Can be used multiple times to add multiple comments."
+  echo "-dd, --disable-defaults: Disable default comments; source_file_name, source_sample_rate, source_bit_depth, source_channels, source_creation_date"
+  echo "-i, --input-file: Specify a single file to process."
+  echo "-l, --log: Log the current comments in the metadata string."
+  echo "-s, --show-streams: Show the available streams in the file, i.e. the audio streams containing the sample rate, bit depth, etc."
+  echo "-mt, --metadata-template: Specify a metadata template file. The script will use the template to generate the metadata string."
   echo "     The template file should be a text file with one line per comment with values separated by a colon."
   echo "     For variables that you would like to extract from the audio file, use the following format: {variable_name}"
   echo "     Example:" 

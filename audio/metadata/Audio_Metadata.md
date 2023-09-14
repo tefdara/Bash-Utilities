@@ -54,17 +54,14 @@ The information above is meant to preserve the original stats of the file if any
 
 ## Examples
 
+Add multiple comments to the metadata:
+
 ```shell
 ./amdt.sh /path/to/audio/files -c "Recorded on 2022-01-01" -c "Edited by John Doe"
 ```
 
 This will add metadata to all audio files in the `/path/to/audio/files` directory, with two custom comments: "Recorded on 2022-01-01" and "Edited by John Doe".
 
-Add a comment to all audio files in a directory:
-
-```shell
-amdt /path/to/audio/folder -c "This is a comment"
-```
 
 Disable default comments and add a custom comment:
 

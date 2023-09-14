@@ -12,6 +12,9 @@ If you do a lot of recordings and then chop them up and rename the files, someti
 
 ```shell
 Usage: ./amdt.sh [-c comment] [-d] [-i input_file] [-l] [-mt metadata_template] [-s] path
+```
+
+```shell
 Example usage : amdt /audioFolder -c "This is a comment"
 ```
 
@@ -24,11 +27,14 @@ Example usage : amdt /audioFolder -c "This is a comment"
 - `-mt, --metadata-template` : Specify a metadata template file. The script will use the template to generate the metadata string.
      The template file should be a text file with one line per comment with values separated by a colon.
      For variables that you would like to extract from the audio file, use the following format:`custom_name: {variable_name}`.
-     
+
      Example:
      `source_file_name`: `{source_file_name}`
-     `Tip`: you can override the default variable names. Note that if you redefine any of the default variables, the script will assume a custom config is being used and won't add any of the default comments:
+
+     `Tip`: you can override the default variable names. Note that if you redefine any of the default variables, the script will assume a custom config is being used and won't add any of the default comments.
+
      `bit-depth`: `{bits_per_sample}`
+
      To see the list of available variables, use the `-s` flag.
 
 ## Output
@@ -46,7 +52,6 @@ Each output file will have the following metadata by default:
 
 The information above is meant to preserve the original stats of the file if any of them change at some point. You can disable the default comments by using the `-dd` flag. Or to rename the default comments, use the `-mt` flag to specify a metadata template file. See the usage section for more details.
 
-```
 ## Examples
 
 ```shell

@@ -23,7 +23,7 @@ Example usage : amdt /audioFolder -c "This is a comment"
 - `-s, --show-streams` : Show the available streams in the file, i.e. the audio streams containing the sample rate, bit depth, etc.
 - `-mt, --metadata-template` : Specify a metadata template file. The script will use the template to generate the metadata string.
      The template file should be a text file with one line per comment with values separated by a colon.
-     For variables that you would like to extract from the audio file, use the following format: {variable_name}
+     For variables that you would like to extract from the audio file, use the following format:`custom_name: {variable_name}`.
      Example:
      `source_file_name`: `{source_file_name}`
      `Tip`: you can override the default variable names. Note that if you redefine any of the default variables, the script will assume a custom config is being used and won't add any of the default comments:
@@ -34,7 +34,7 @@ Example usage : amdt /audioFolder -c "This is a comment"
 
 The output files will be saved in the same directory as the input files, with the same filename and extension.
 
-Each output file will have the following metadata:
+Each output file will have the following metadata by default:
 
 - `source_file_name`: The filename or a custom name specified by the user.
 - `source_sample_rate`: The sample rate of the input file.
@@ -43,7 +43,9 @@ Each output file will have the following metadata:
 - `source_creation_date`: The creation date of the input file.
 - Any custom comments specified by the user.
 
-The information above is meant to preserve the original stats of the file if any of them change at some point.
+The information above is meant to preserve the original stats of the file if any of them change at some point. You can disable the default comments by using the `-dd` flag. Or to rename the default comments, use the `-mt` flag to specify a metadata template file. See the usage section for more details.
+
+```
 ## Examples
 
 ```shell

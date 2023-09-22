@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # This script runs a python script on audio files in a directory and its subdirectories to extract descriptors
-# It takes in the file name as the firts argument, the preset as the 2nd and threshold as 3d with -t or --threshold
 
 # Bash shortcut -> batchpy
 # you can use echo to add it to ~/.zprofile or ~/.bash_profile or ~/.bashrc, depending on your system

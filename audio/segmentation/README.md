@@ -1,5 +1,3 @@
-GitHub Copilot: Certainly! Here's a README file for the `au_cut.sh` script:
-
 # Audio Segmentation
 
 This script uses the `aubiocut` tool to cut an audio file into multiple segments based on a specified threshold and preset. It's just a shortcut to aubio cut so that quick segmentation can be done using some presets. 

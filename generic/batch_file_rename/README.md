@@ -1,5 +1,3 @@
-GitHub Copilot: Sure, here's a sample README for the `batch_rename.sh` script:
-
 # Batch File Renamer
 
 This script renames audio files in a directory and its subdirectories. It takes in the directory path as the first argument.

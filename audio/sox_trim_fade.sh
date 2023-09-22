@@ -84,7 +84,7 @@ counter=1
 while IFS= read -r -d $'\0' file; do
   # Trim silence and add 20ms fade
   temp_filepath="${search_path}/temp_${counter}.$audio_format"
-  sox_command="gain -n -3 -b 24 highpass ${highpass_filter_frequency} "
+  sox_command="gain -n -3 highpass ${highpass_filter_frequency} "
 
   case "$preset" in
     long)
@@ -108,7 +108,7 @@ while IFS= read -r -d $'\0' file; do
     sox_command+=" reverse"
   fi
 
-  sox "$file" "$temp_filepath" $sox_command
+  sox "$file" "-b 24" "$temp_filepath" $sox_command
 
   if [ $? -ne 0 ]; then
     echo "Error processing file: ${file}"

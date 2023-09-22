@@ -47,7 +47,8 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-file_extensions=("wav" "aif" "aiff" "flac" "mp3" "m4a" "aac")
+file_extensions=("wav" "aif" "aiff" "flac" "mp3" "m4a" "aac") 
+
 home_dir="$(realpath ~)"
 search_path="$(realpath "$search_path")"
 

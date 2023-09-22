@@ -10,6 +10,9 @@ This script normalizes audio files in a directory and its subdirectories. It tak
 
 ```shell
 normaudio path [-g gain]
+
+- `path`: Directory path of the audio files.
+- `-g`: Define the gain for normalization. If not provided, the default is -3 dB.
 ```
 
 Example usage: 
@@ -17,9 +20,6 @@ Example usage:
 ```shell
 normaudio /audioFolder -g -2
 ```
-
-- `path`: Directory path of the audio files.
-- `-g`: Define the gain for normalization. If not provided, the default is -3 dB.
 
 ## Supported File Formats
 

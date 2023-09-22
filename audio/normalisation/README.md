@@ -14,7 +14,7 @@ normaudio path [-g gain]
 
 Example usage: 
 ```shell
-`normaudio /audioFolder -g -2`
+normaudio /audioFolder -g -2
 ```
 
 - `path`: Directory path of the audio files.

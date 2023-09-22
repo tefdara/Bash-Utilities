@@ -45,11 +45,11 @@ fi
 
 # Download the file
 echo "Downloading file from $FILE_URL..."
-curl --proto =https --tlsv1.2 -O -L $FILE_URL
+curl --proto =https -OL $FILE_URL
 
 # Download the GPG signature file
 echo "Downloading signature file from $GPG_SIG_URL..."
-curl --proto =https --tlsv1.2 -O -L $GPG_SIG_URL
+curl --proto =https -OL $GPG_SIG_URL
 
 # Choose the hash command based on the algorithm
 if [ "$SHA_ALGORITHM" == "1" ]; then

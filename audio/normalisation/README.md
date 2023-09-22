@@ -13,6 +13,7 @@ normaudio path [-g gain]
 ```
 
 Example usage: 
+
 ```shell
 normaudio /audioFolder -g -2
 ```

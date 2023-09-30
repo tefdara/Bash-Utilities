@@ -127,8 +127,7 @@ for file in "${audio_files[@]}"; do
   if [ -n "$custom_name" ]; then
     new_filename="${custom_name}_${category}_${counter}.wav"
   else
-    filename=$(basename "$file")
-    new_filename="$(basename $file).wav"
+    new_filename=$(basename "$file")
   fi
 
   new_filepath="${search_path}/${category}/${new_filename}"

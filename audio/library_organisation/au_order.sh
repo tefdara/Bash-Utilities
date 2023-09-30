@@ -7,7 +7,7 @@
 
 
 usage() {
-  echo "Usage: organize_audio directory_path [-name custom_name] [-trans transient_duration_ms] [-short short_duration_ms] [-long long_duration_ms]"
+  echo "Usage: organize_audio directory_path [-name custom_name] [-trans transient_duration_ms] [-short short_duration_ms] [-long long_duration_ms] [-ex-long extra_long_duration_ms]"
 }
 
 if [ -z "$1" ]; then
@@ -22,6 +22,7 @@ custom_name=""
 transient_duration_ms=500
 short_duration_ms=1000
 long_duration_ms=5000
+extra_long_duration_ms=10000
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -39,6 +40,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     -long)
       long_duration_ms="$2"
+      shift 2
+      ;;
+    -ex-long)
+      extra_long_duration_ms="$2"
       shift 2
       ;;
     *)
@@ -69,6 +74,18 @@ short_counter=1
 medium_counter=1
 long_counter=1
 
+# if there is an analysis folder in the directory, also look inside that and copy the corresponding analysis file for each audio file
+if [ -d "${search_path}/analysis" ]; then
+  analysis_files=("${search_path}/analysis"/*.txt)
+  for file in "${audio_files[@]}"; do
+    filename=$(basename "$file")
+    analysis_file="${search_path}/analysis/${filename}.txt"
+    if [ -f "$analysis_file" ]; then
+      audio_files+=("$analysis_file")
+    fi
+  done
+fi
+
 for file in "${audio_files[@]}"; do
   file_duration_ms=$(mediainfo --Output="Audio;%Duration%" "$file")
 
@@ -84,10 +101,25 @@ for file in "${audio_files[@]}"; do
     category="medium"
     counter=$medium_counter
     medium_counter=$((medium_counter + 1))
-  else
+  elif [ "$file_duration_ms" -le "$extra_long_duration_ms" ]; then
     category="long"
     counter=$long_counter
     long_counter=$((long_counter + 1))
+  else
+    category="extra_long"
+    counter=$extra_long_counter
+    extra_long_counter=$((extra_long_counter + 1))
+  fi
+
+  filename=$(basename "$file")
+  filename="${filename%.*}"
+  analysis_file="${search_path}/analysis/${filename}_analysis.json"
+  if [ -f "$analysis_file" ]; then
+    echo "Found analysis file for $filename"
+    echo "Copying analysis file to ${search_path}/${category}/${filename}_analysis.json"
+    mkdir -p "${search_path}/${category}/analysis"
+    anal_copy="${search_path}/${category}/analysis/${filename}_analysis.json"
+    cp "$analysis_file" "$anal_copy"
   fi
 
   mkdir -p "${search_path}/${category}"
@@ -96,9 +128,11 @@ for file in "${audio_files[@]}"; do
     new_filename="${custom_name}_${category}_${counter}.wav"
   else
     filename=$(basename "$file")
-    new_filename="${filename%%_*}_${category}_${counter}.wav"
+    new_filename="$(basename $file).wav"
   fi
 
   new_filepath="${search_path}/${category}/${new_filename}"
-  mv "$file" "$new_filepath"
+  echo "$analysis_file"
+  echo "Copying $file to $new_filepath"
+  cp "$file" "$new_filepath"
 done

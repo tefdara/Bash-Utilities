@@ -9,7 +9,7 @@
 # Bash shortcut -> groupfiles
 
 usage() {
-    echo "Usage: group_files source_directory [-ex source_extension] [-t target_directory] [-nd new_directory]"
+    echo "Usage: group_files source_directory [-ex source_extension] [-t target_directory] [-nd group_path]"
 }
 
 if [ -z "$1" ]; then
@@ -21,7 +21,7 @@ source_directory="$1"
 shift
 
 target_directory="$source_directory"
-new_directory="grouped_files"
+group_path="grouped_files"
 source_extension="wav"
 
 while [ "$#" -gt 0 ]; do
@@ -35,7 +35,7 @@ while [ "$#" -gt 0 ]; do
       shift 2
       ;;
     -nd)
-      new_directory="$2"
+      group_path="$2"
       shift 2
       ;;
     *)
@@ -57,20 +57,25 @@ if [ "$search_path" = "$home_dir" ] || [ "$target_directory" = "$home_dir" ]; th
 fi
 
 shopt -s nullglob
-source_files="$(find "$source_directory" -type f -name "*.$source_extension")"
+source_files=()
+while IFS= read -r -d $'\0'; do
+    source_files+=("$REPLY")
+done < <(find "$source_directory" -type f -iname "*.$source_extension" -print0)
 
 if [[ ${#source_files[@]} -eq 0 ]]; then
         echo "No files found in source directory! Make sure you pass the right directory";
         exit 1
 fi
-
+echo "$source_files"
 for file in "${source_files[@]}"; do
     filename=$(basename "$file")
     extension="${filename##*.}"
     filename="${filename%.*}"
+    group_path=$(basename "$file")
+    group_path="${group_path%.*}"
+    group_path=".././${group_path}"
 
     echo "Processing $filename"
-
     target_files=()
     while IFS= read -r -d $'\0'; do
         target_files+=("$REPLY")
@@ -80,17 +85,15 @@ for file in "${source_files[@]}"; do
         echo "No files found with same name in target directory"
         continue
     fi
-    new_directory=$(basename "$file")
-    new_directory="${new_directory%.*}"
-    new_directory="../${new_directory}"
-    mkdir -p "$new_directory"
-    mv "$file" "${new_directory}/${filename}.${extension}"
+    filename=$(basename "$file")
+    mkdir -p "$group_path"
+    mv "$file" "${group_path}/${filename}"
     for target_file in "${target_files[@]}"; do
         if [ -f "$target_file" ]; then
             echo "Found a match in target directory: $target_file"
             base_target_file=$(basename "$target_file")
-            echo "Moving $target_file to $new_directory"
-            mv "$target_file" "${new_directory}/${base_target_file}"
+            echo "Moving $target_file to $group_path"
+            mv "$target_file" "${group_path}/${base_target_file}"
         fi
     done
 done

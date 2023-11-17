@@ -7,7 +7,18 @@
 
 
 usage() {
-  echo "Usage: organize_audio directory_path [-name custom_name] [-trans transient_duration_ms] [-short short_duration_ms] [-long long_duration_ms] [-ex-long extra_long_duration_ms]"
+  echo "Usage: ./au_order.sh directory_path [-name custom_name] ['-fl' | '-flicker' flicker_duration_ms] ['-spark' spark_duration_ms] ['-transient' transient_duration_ms] ['-sw' | '-swift' swift_duration_ms] ['-short' short_duration_ms] ['-long' long_duration_ms] ['-ct' | '-continuous' continuous_duration_ms"
+  echo "Example usage: ./au_order.sh ~/Desktop/audio"
+  echo ""
+  echo "Default duration values:"
+  echo "Flicker: 0-150ms"
+  echo "Spark: 150-300ms"
+  echo "Transient: 300-500ms"
+  echo "Swift short: 500-1000ms"
+  echo "Short: 1000-2000ms"
+  echo "Average: 2000-5000ms"
+  echo "Long: 5000-10000ms"
+  echo "Continuous: 10000ms+"
 }
 
 if [ -z "$1" ]; then
@@ -19,33 +30,48 @@ search_path="$1"
 shift
 
 custom_name=""
+flicker_duration_ms=150
+spark_duration_ms=300
 transient_duration_ms=500
-short_duration_ms=1000
+swift_duration_ms=1000
+short_duration_ms=2000
 long_duration_ms=5000
-extra_long_duration_ms=10000
+continuous_duration_ms=10000
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    -name)
-      custom_name="$2"
-      shift 2
-      ;;
-    -trans)
-      transient_duration_ms="$2"
-      shift 2
-      ;;
-    -short)
-      short_duration_ms="$2"
-      shift 2
-      ;;
-    -long)
-      long_duration_ms="$2"
-      shift 2
-      ;;
-    -ex-long)
-      extra_long_duration_ms="$2"
-      shift 2
-      ;;
+      -name)
+        custom_name="$2"
+        shift 2
+        ;;
+      -fl | -flicker)
+        flicker_duration_ms="$2"
+        shift 2
+        ;;
+      -spark)
+        spark_duration_ms="$2"
+        shift 2
+        ;;
+      -transient)
+        transient_duration_ms="$2"
+        shift 2
+        ;;
+      -sw | -swift)
+        swift_duration_ms="$2"
+        shift 2
+        ;;
+      -short)
+        short_duration_ms="$2"
+        shift 2
+        ;;
+      -long)
+        long_duration_ms="$2"
+        shift 2
+        ;;
+      -ct | -continuous)
+        continuous_duration_ms="$2"
+        shift 2
+        ;;
     *)
       echo "Unknown option: $1"
       usage
@@ -71,7 +97,7 @@ fi
 
 transient_counter=1
 short_counter=1
-medium_counter=1
+average_counter=1
 long_counter=1
 
 # if there is an analysis folder in the directory, also look inside that and copy the corresponding analysis file for each audio file
@@ -89,26 +115,38 @@ fi
 for file in "${audio_files[@]}"; do
   file_duration_ms=$(mediainfo --Output="Audio;%Duration%" "$file")
 
-  if [ "$file_duration_ms" -le "$transient_duration_ms" ]; then
+  if [ "$file_duration_ms" -le "$flicker_duration_ms" ]; then
+    category="flicker"
+    counter=$flicker_counter
+    flicker_counter=$((flicker_counter + 1))
+  elif [ "$file_duration_ms" -le "$spark_duration_ms" ]; then
+    category="spark"
+    counter=$spark_counter
+    spark_counter=$((spark_counter + 1))
+  elif [ "$file_duration_ms" -le "$transient_duration_ms" ]; then
     category="transient"
     counter=$transient_counter
     transient_counter=$((transient_counter + 1))
+  elif [ "$file_duration_ms" -le "$swift_duration_ms" ]; then
+    category="swift"
+    counter=$swift_counter
+    swift_counter=$((swift_counter + 1))
   elif [ "$file_duration_ms" -le "$short_duration_ms" ]; then
     category="short"
     counter=$short_counter
     short_counter=$((short_counter + 1))
   elif [ "$file_duration_ms" -le "$long_duration_ms" ]; then
-    category="medium"
-    counter=$medium_counter
-    medium_counter=$((medium_counter + 1))
-  elif [ "$file_duration_ms" -le "$extra_long_duration_ms" ]; then
+    category="average"
+    counter=$average_counter
+    average_counter=$((average_counter + 1))
+  elif [ "$file_duration_ms" -le "$continuous_duration_ms" ]; then
     category="long"
     counter=$long_counter
     long_counter=$((long_counter + 1))
   else
-    category="extra_long"
-    counter=$extra_long_counter
-    extra_long_counter=$((extra_long_counter + 1))
+    category="continuous"
+    counter=$continuous_counter
+    continuous_counter=$((continuous_counter + 1))
   fi
 
   filename=$(basename "$file")
@@ -135,3 +173,19 @@ for file in "${audio_files[@]}"; do
   echo "Copying $file to $new_filepath"
   cp "$file" "$new_filepath"
 done
+
+echo ""
+echo "Done!"
+echo ""
+echo "Summary:"
+echo "Flicker: $flicker_counter"
+echo "Spark: $spark_counter"
+echo "Transient: $transient_counter"
+echo "Swift short: $swift_counter"
+echo "Short: $short_counter"
+echo "Average: $average_counter"
+echo "Long: $long_counter"
+echo "Continuous: $continuous_counter"
+# sum all the counters to make sure we have all the files
+# its ok if this number is higher than the number of files, because some files might be in multiple categories
+echo "Total: $((flicker_counter + spark_counter + transient_counter + swift_counter + short_counter + average_counter + long_counter + continuous_counter))"

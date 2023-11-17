@@ -12,7 +12,7 @@
 # echo "alias gathersounds=\"bash ~/path-to-script/gather_sounds\"" >> ~/.zprofile && source ~/.zprofile
 
 usage() {
-  echo "Usage: copyaudiofiles -f format source_directory_path destination_directory_path"
+  echo "Usage: gather_files -f format source_directory_path destination_directory_path"
 }
 
 if [ -z "$1" ] || [ "$1" != "-f" ] || [ -z "$2" ] || [ -z "$3" ]; then

@@ -9,7 +9,9 @@
 
 usage() {
   echo
-  echo -e "\033[33mUsage: batchname directory_path [-name custom_name] [-append append_text]\033[0m"
+  echo -e "\033[33mUsage: batchname directory_path [-ext file_extension] [-name custom_name] [-append append_text]\033[0m"
+  echo
+  echo -e "\033[36mExample: batchname ~/Music/MyAlbum -ext wav -name NewAlbum -> NewAlbum_1.wav, NewAlbum_2.wav, ...\033[0m"
   echo
   echo -e "\033[36mExample: batchname ~/Music/MyAlbum -name NewAlbum -> NewAlbum_1.wav, NewAlbum_2.wav, ...\033[0m"
   echo -e "Or"
@@ -19,10 +21,10 @@ usage() {
   echo -e "\033[36mExample: batchname ~/Music/MyAlbum -name MyAlbum_%_Take -> MyAlbum_1_Take_1.wav, MyAlbum_2_Take_2.wav, ...\033[0m"
   echo
   echo -e "You can use -append to append text to the original name."
-  echo -e "\033[36mExample: batchname ~/Music/MyAlbum -append _remastered -> MyAlbum_remastered_1.wav, MyAlbum_remastered_2.wav, ...\033[0m"
+  echo -e "\033[36mExample: batchname ~/Music/MyAlbum -append _remastered -> Track_1_remastered.wav, Track_2_remastered.wav, ...\033[0m"
   echo
   echo -e "You can also use % in the append text to enumerate the files."
-  echo -e "\033[36mExample: batchname ~/Music/MyAlbum -append _remastered_% -> MyAlbum_remastered_1.wav, MyAlbum_remastered_2.wav, ...\033[0m"
+  echo -e "\033[36mExample: batchname ~/Music/MyAlbum -append _remastered_% -> Track_1_remastered_1.wav, Track_2_remastered_2.wav, ...\033[0m"
   echo
 }
 
@@ -36,6 +38,7 @@ shift
 
 custom_name=""
 append_text=""
+extension="wav"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -45,6 +48,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     -append)
       append_text="$2"
+      shift 2
+      ;;
+    -ext)
+      extension="$2"
       shift 2
       ;;
     *)
@@ -62,11 +69,24 @@ if [ "$search_path" = "$home_dir" ]; then
   exit 2
 fi
 
+if [ ! -d "$search_path" ]; then
+  echo "Error: The directory does not exist."
+  exit 2
+fi
+
+if [ "$search_path" = "." ]; then
+  search_path="$(realpath .)"
+fi
+if ["$custom_name" eq ""]; then
+  custom_name=$(basename "$search_path")
+  echo "Using $custom_name as custom name"
+fi
+
 # Read files into an array using a while loop
 files=()
 while IFS= read -r -d $'\0'; do
     files+=("$REPLY")
-done < <(find "$search_path" -type f ! -path '*/\.*' -print0)
+done < <(find "$search_path" -type f -name "*.${extension}" -print0)
 
 
 if [[ ${#files[@]} -eq 0 ]]; then
@@ -74,6 +94,7 @@ if [[ ${#files[@]} -eq 0 ]]; then
     exit 1
 fi
 
+temp_files=()
 counter=1
 for file in "${files[@]}"; do
   # Use custom name or remove everything after the underscore
@@ -106,10 +127,23 @@ fi
   # Rename the file
   new_filepath="${search_path}/${filename_without_ext}.${file_ext}"
   if [ "$file" != "$new_filepath" ]; then
-    echo "Renaming ${file} to ${new_filepath}"
-    mv "$file" "$new_filepath"
+    # create a temp file to avoid overwriting other files with the same name
+    temp_filepath="${search_path}/temp_${filename_without_ext}.${file_ext}"
+    echo "Creating $temp_filepath"
+    mv "$file" "$temp_filepath"
+    temp_files+=("$temp_filepath")
   fi
 
-  # Increment the counter
   counter=$((counter + 1))
+done
+
+# Rename the temp files
+for temp_file in "${temp_files[@]}"; do
+  filename=$(basename "$temp_file")
+  filename_without_ext="${filename%%.*}"
+  filename_without_ext="${filename_without_ext#temp_}"
+  file_ext="${temp_file##*.}"
+  new_filepath="${search_path}/${filename_without_ext}.${file_ext}"
+  echo "Renaming $temp_file to $new_filepath"
+  mv "$temp_file" "$new_filepath"
 done

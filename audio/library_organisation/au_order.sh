@@ -7,18 +7,23 @@
 
 
 usage() {
-  echo "Usage: ./au_order.sh directory_path [-name custom_name] ['-fl' | '-flicker' flicker_duration_ms] ['-spark' spark_duration_ms] ['-transient' transient_duration_ms] ['-sw' | '-swift' swift_duration_ms] ['-short' short_duration_ms] ['-long' long_duration_ms] ['-ct' | '-continuous' continuous_duration_ms"
-  echo "Example usage: ./au_order.sh ~/Desktop/audio"
+  echo "Usage: ./au_order.sh directory_path [-name custom_name] [-transient transient_duration_ms] [-short short_duration_ms] [-medium medium_duration_ms] [-long long_duration_ms] [-ppp ppp_threshold] [-pp pp_threshold] [-p p_threshold] [-mp mp_threshold] [-mf mf_threshold] [-f f_threshold] [-ff ff_threshold]"
   echo ""
   echo "Default duration values:"
-  echo "Flicker: 0-150ms"
-  echo "Spark: 150-300ms"
-  echo "Transient: 300-500ms"
-  echo "Swift short: 500-1000ms"
-  echo "Short: 1000-2000ms"
-  echo "Average: 2000-5000ms"
+  echo "Transient: 0-300ms"
+  echo "Short: 300-1000ms"
+  echo "Med: 1000-2500ms"
   echo "Long: 5000-10000ms"
-  echo "Continuous: 10000ms+"
+
+  echo ""
+  echo "Default dynamic values:"
+  echo "ppp: -30 to -25"
+  echo "pp: -25 to -20"
+  echo "p: -20 to -15"
+  echo "mp: -15 to -10"
+  echo "mf: -10 to -5"
+  echo "f: -5 to 0"
+  echo "ff: 0 to 5"
 }
 
 if [ -z "$1" ]; then
@@ -30,13 +35,20 @@ search_path="$1"
 shift
 
 custom_name=""
-flicker_duration_ms=150
-spark_duration_ms=300
-transient_duration_ms=500
-swift_duration_ms=1000
-short_duration_ms=2000
-long_duration_ms=5000
-continuous_duration_ms=10000
+transient_duration_ms=300
+short_duration_ms=1000
+medium_duration_ms=2500
+long_duration_ms=10000
+
+ppp_threshold=-30
+pp_threshold=-25
+p_threshold=-20
+mp_threshold=-15
+mf_threshold=-10
+f_threshold=-5
+ff_threshold=0
+
+
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -44,35 +56,59 @@ while [ "$#" -gt 0 ]; do
         custom_name="$2"
         shift 2
         ;;
-      -fl | -flicker)
-        flicker_duration_ms="$2"
-        shift 2
-        ;;
-      -spark)
-        spark_duration_ms="$2"
-        shift 2
-        ;;
-      -transient)
+      -transient | -t)
         transient_duration_ms="$2"
         shift 2
         ;;
-      -sw | -swift)
-        swift_duration_ms="$2"
-        shift 2
-        ;;
-      -short)
+      -short | -s)
         short_duration_ms="$2"
         shift 2
         ;;
-      -long)
+      -medium | -m)
+        medium_duration_ms="$2"
+        shift 2
+        ;;
+      -long | -l)
         long_duration_ms="$2"
         shift 2
         ;;
-      -ct | -continuous)
-        continuous_duration_ms="$2"
+      -extended | -e)
+        extended_duration_ms="$2"
         shift 2
-        ;;
-    *)
+      ;;
+      -ppp)
+      ppp_threshold="$2"
+        shift 2
+      ;;
+      -pp)
+      pp_threshold="$2"
+        shift 2
+      ;;
+      -p)
+      p_threshold="$2"
+        shift 2
+      ;;
+      -mp)
+      mp_threshold="$2"
+        shift 2
+      ;;
+      -mf)
+      mf_threshold="$2"
+        shift 2
+      ;;
+      -f)
+      f_threshold="$2"
+        shift 2
+      ;;
+      -ff)
+      ff_threshold="$2"
+        shift 2
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+      *)
       echo "Unknown option: $1"
       usage
       exit 1
@@ -95,10 +131,38 @@ if [[ ${#audio_files[@]} -eq 0 ]]; then
     exit 1
 fi
 
+categorize_intensity() {
+    local file=$1
+    local rms_db=$(sox "$file" -n stats 2>&1 | awk '/RMS lev dB/ {print $4}')
+    local intensity=""
+
+    # Define thresholds for classical music dynamics
+    if (( $(echo "$rms_db < -30" | bc -l) )); then
+        intensity="ppp"  # pianississimo
+    elif (( $(echo "$rms_db < -25" | bc -l) )); then
+        intensity="pp"   # pianissimo
+    elif (( $(echo "$rms_db < -20" | bc -l) )); then
+        intensity="p"    # piano
+    elif (( $(echo "$rms_db < -15" | bc -l) )); then
+        intensity="mp"   # mezzo-piano
+    elif (( $(echo "$rms_db < -10" | bc -l) )); then
+        intensity="mf"   # mezzo-forte
+    elif (( $(echo "$rms_db < -5" | bc -l) )); then
+        intensity="f"    # forte
+    elif (( $(echo "$rms_db < 0" | bc -l) )); then
+        intensity="ff"   # fortissimo
+    else
+        intensity="fff"  # fortississimo
+    fi
+
+    echo $intensity
+}
+
 transient_counter=1
 short_counter=1
-average_counter=1
+medium_counter=1
 long_counter=1
+extended_counter=1
 
 # if there is an analysis folder in the directory, also look inside that and copy the corresponding analysis file for each audio file
 if [ -d "${search_path}/analysis" ]; then
@@ -112,42 +176,54 @@ if [ -d "${search_path}/analysis" ]; then
   done
 fi
 
+categorized_files=()
+
 for file in "${audio_files[@]}"; do
   file_duration_ms=$(mediainfo --Output="Audio;%Duration%" "$file")
+  dynamic_category=$(categorize_intensity "$file")
 
-  if [ "$file_duration_ms" -le "$flicker_duration_ms" ]; then
-    category="flicker"
-    counter=$flicker_counter
-    flicker_counter=$((flicker_counter + 1))
-  elif [ "$file_duration_ms" -le "$spark_duration_ms" ]; then
-    category="spark"
-    counter=$spark_counter
-    spark_counter=$((spark_counter + 1))
-  elif [ "$file_duration_ms" -le "$transient_duration_ms" ]; then
-    category="transient"
+  if [[ " ${categorized_files[@]} " =~ " ${file} " ]]; then
+    echo "$file has already been categorized"
+    continue
+  fi
+
+  if [ "$file_duration_ms" -le "$transient_duration_ms" ]; then
+    category="Transient"
+    dur_code_name="T"
     counter=$transient_counter
     transient_counter=$((transient_counter + 1))
-  elif [ "$file_duration_ms" -le "$swift_duration_ms" ]; then
-    category="swift"
-    counter=$swift_counter
-    swift_counter=$((swift_counter + 1))
+    categorized_files+=("$file")
+
   elif [ "$file_duration_ms" -le "$short_duration_ms" ]; then
-    category="short"
+    category="Short"
+    dur_code_name="S"
     counter=$short_counter
     short_counter=$((short_counter + 1))
+    categorized_files+=("$file")
+
+  elif [ "$file_duration_ms" -le "$medium_duration_ms" ]; then
+    category="Medium"
+    dur_code_name="M"
+    counter=$medium_counter
+    medium_counter=$((medium_counter + 1))
+    categorized_files+=("$file")
+
   elif [ "$file_duration_ms" -le "$long_duration_ms" ]; then
-    category="average"
-    counter=$average_counter
-    average_counter=$((average_counter + 1))
-  elif [ "$file_duration_ms" -le "$continuous_duration_ms" ]; then
-    category="long"
+    category="Long"
+    dur_code_name="L"
     counter=$long_counter
     long_counter=$((long_counter + 1))
+    categorized_files+=("$file")
+
   else
-    category="continuous"
-    counter=$continuous_counter
-    continuous_counter=$((continuous_counter + 1))
+    category="Extended"
+    dur_code_name="E"
+    counter=$extended_counter
+    extended_counter=$((extended_counter + 1))
+    categorized_files+=("$file")
   fi
+
+  counter=$(printf "%03d" "$counter")
 
   filename=$(basename "$file")
   filename="${filename%.*}"
@@ -161,15 +237,14 @@ for file in "${audio_files[@]}"; do
   fi
 
   mkdir -p "${search_path}/${category}"
-
   if [ -n "$custom_name" ]; then
-    new_filename="${custom_name}_${category}_${counter}.wav"
+    new_filename="${custom_name}_${dur_code_name}_${dynamic_category}_${counter}.wav"
   else
-    new_filename=$(basename "$file")
+    filename="${filename%%[0-9_]*}"
+    new_filename="${filename}_${dur_code_name}_${dynamic_category}_${counter}.wav"
   fi
 
   new_filepath="${search_path}/${category}/${new_filename}"
-  echo "$analysis_file"
   echo "Copying $file to $new_filepath"
   cp "$file" "$new_filepath"
 done
@@ -178,14 +253,13 @@ echo ""
 echo "Done!"
 echo ""
 echo "Summary:"
-echo "Flicker: $flicker_counter"
-echo "Spark: $spark_counter"
-echo "Transient: $transient_counter"
-echo "Swift short: $swift_counter"
-echo "Short: $short_counter"
-echo "Average: $average_counter"
-echo "Long: $long_counter"
-echo "Continuous: $continuous_counter"
-# sum all the counters to make sure we have all the files
+echo "--------"
+echo ""
+echo "Transient: $((transient_counter - 1))"
+echo "Short: $((short_counter - 1))"
+echo "Medium: $((medium_counter - 1))"
+echo "Long: $((long_counter - 1))"
+echo "Extended: $((extended_counter - 1))"
+echo "Original File Count: ${#audio_files[@]}"
 # its ok if this number is higher than the number of files, because some files might be in multiple categories
-echo "Total: $((flicker_counter + spark_counter + transient_counter + swift_counter + short_counter + average_counter + long_counter + continuous_counter))"
+echo "Total Categorised: $(($transient_counter + $short_counter + $medium_counter + $long_counter + $extended_counter - 5))"

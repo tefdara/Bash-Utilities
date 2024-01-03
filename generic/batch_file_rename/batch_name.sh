@@ -25,7 +25,9 @@ usage() {
   echo
   echo -e "You can also use % in the append text to enumerate the files."
   echo -e "\033[36mExample: batchname ~/Music/MyAlbum -append _remastered_% -> Track_1_remastered_1.wav, Track_2_remastered_2.wav, ...\033[0m"
-  echo
+  echo 
+  echo -e "You can rename all file extensions by using -all"
+  echo -e "\033[36mExample: batchname ~/Music/MyAlbum -all -name NewAlbum -> NewAlbum_1.wav, NewAlbum_2.mp3, ...\033[0m"
 }
 
 if [ -z "$1" ]; then
@@ -39,6 +41,7 @@ shift
 custom_name=""
 append_text=""
 extension="wav"
+all_extensions=false
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -53,6 +56,10 @@ while [ "$#" -gt 0 ]; do
     -ext)
       extension="$2"
       shift 2
+      ;;
+    -all)
+      all_extensions=true
+      shift 1
       ;;
     *)
       echo "Unknown option: $1"
@@ -82,11 +89,15 @@ if ["$custom_name" eq ""]; then
   echo "Using $custom_name as custom name"
 fi
 
-# Read files into an array using a while loop
+
 files=()
-while IFS= read -r -d $'\0'; do
-    files+=("$REPLY")
-done < <(find "$search_path" -type f -name "*.${extension}" -print0)
+if [ "$all_extensions" = true ]; then
+  shopt -s nullglob
+  files=("$search_path"/*)
+else
+  shopt -s nullglob
+  files=("$search_path"/*."$extension")
+fi
 
 
 if [[ ${#files[@]} -eq 0 ]]; then

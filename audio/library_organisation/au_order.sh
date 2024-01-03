@@ -12,8 +12,8 @@ usage() {
   echo "Default duration values:"
   echo "Transient: 0-300ms"
   echo "Short: 300-1000ms"
-  echo "Med: 1000-2500ms"
-  echo "Long: 5000-10000ms"
+  echo "Med: 1000-3000ms"
+  echo "Long: 3000-10000ms"
 
   echo ""
   echo "Default dynamic values:"
@@ -37,7 +37,7 @@ shift
 custom_name=""
 transient_duration_ms=300
 short_duration_ms=1000
-medium_duration_ms=2500
+medium_duration_ms=3000
 long_duration_ms=10000
 
 ppp_threshold=-30
@@ -136,23 +136,22 @@ categorize_intensity() {
     local rms_db=$(sox "$file" -n stats 2>&1 | awk '/RMS lev dB/ {print $4}')
     local intensity=""
 
-    # Define thresholds for classical music dynamics
-    if (( $(echo "$rms_db < -30" | bc -l) )); then
-        intensity="ppp"  # pianississimo
+    if (( $(echo "$rms_db < -35" | bc -l) )); then
+        intensity="fff"  # pianississimo
     elif (( $(echo "$rms_db < -25" | bc -l) )); then
-        intensity="pp"   # pianissimo
+        intensity="ff"   # pianissimo
     elif (( $(echo "$rms_db < -20" | bc -l) )); then
-        intensity="p"    # piano
+        intensity="f"    # piano
     elif (( $(echo "$rms_db < -15" | bc -l) )); then
-        intensity="mp"   # mezzo-piano
+        intensity="mf"   # mezzo-piano
     elif (( $(echo "$rms_db < -10" | bc -l) )); then
-        intensity="mf"   # mezzo-forte
+        intensity="mp"   # mezzo-forte
     elif (( $(echo "$rms_db < -5" | bc -l) )); then
-        intensity="f"    # forte
+        intensity="p"    # forte
     elif (( $(echo "$rms_db < 0" | bc -l) )); then
-        intensity="ff"   # fortissimo
+        intensity="pp"   # fortissimo
     else
-        intensity="fff"  # fortississimo
+        intensity="ppp"  # fortississimo
     fi
 
     echo $intensity

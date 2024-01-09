@@ -17,21 +17,21 @@ key="$1"
 case $key in
     -s|--script)
     SCRIPT="$2"
-    shift # past argument
-    shift # past value
+    shift 
+    shift 
     ;;
     -p|--path)
     ROOT_DIR="$2"
-    shift # past argument
-    shift # past value
+    shift
+    shift 
     ;;
     -o|--options)
     OPTIONS="$2"
-    shift # past argument
-    shift # past value
+    shift 
+    shift 
     ;;
-    *)    # unknown option
-    shift # past argument
+    *)    
+    shift 
     ;;
 esac
 done

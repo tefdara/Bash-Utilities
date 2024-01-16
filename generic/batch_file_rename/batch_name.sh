@@ -157,7 +157,6 @@ elif [ "$rename_dirs" = true ]; then
 fi
 
 echo "Found ${#files[@]} files"
-echo "Files: ${files[@]}"
 if [[ ${#files[@]} -eq 0 ]]; then
     echo "No files found! Make sure you pass the right directory";
     exit 1
@@ -186,7 +185,6 @@ rename() {
       fi
       echo "Using $custom_name as custom name"
     fi
-
     # Use custom name or remove everything after the underscore
     if [ -n "$custom_name" ]; then
       # Check if custom_name has % and replace it with counter
@@ -249,7 +247,10 @@ rename() {
       counter=$((counter + 1))
       counter_string="_$counter"
     fi
-
+    
+    if [ "$recursive" = true ]; then
+      custom_name=""
+    fi
     temp_counter=$((temp_counter + 1))
   done
 }

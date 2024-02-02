@@ -35,6 +35,7 @@ search_path="$1"
 shift
 
 custom_name=""
+categorise_durations=true
 transient_duration_ms=300
 short_duration_ms=1000
 medium_duration_ms=3000
@@ -55,6 +56,10 @@ while [ "$#" -gt 0 ]; do
       -name)
         custom_name="$2"
         shift 2
+        ;;
+      -no-durations | -nd)
+        categorise_durations=false
+        shift 1
         ;;
       -transient | -t)
         transient_duration_ms="$2"
@@ -162,6 +167,7 @@ short_counter=1
 medium_counter=1
 long_counter=1
 extended_counter=1
+name_counter=1
 
 # if there is an analysis folder in the directory, also look inside that and copy the corresponding analysis file for each audio file
 if [ -d "${search_path}/analysis" ]; then
@@ -186,7 +192,13 @@ for file in "${audio_files[@]}"; do
     continue
   fi
 
-  if [ "$file_duration_ms" -le "$transient_duration_ms" ]; then
+  if [ "$categorise_durations" = false ]; then
+    category="Uncategorised"
+    dur_code_name=""
+    counter=0
+    categorized_files+=("$file")
+
+  elif [ "$file_duration_ms" -le "$transient_duration_ms" ]; then
     category="Transient"
     dur_code_name="T"
     counter=$transient_counter
@@ -239,8 +251,36 @@ for file in "${audio_files[@]}"; do
   if [ -n "$custom_name" ]; then
     new_filename="${custom_name}_${dur_code_name}_${dynamic_category}_${counter}.wav"
   else
-    filename="${filename%%[0-9_]*}"
-    new_filename="${filename}_${dur_code_name}_${dynamic_category}_${counter}.wav"
+    # filename="${filename%%[0-9_]*}"
+    # filename without extension
+    if [[ categorise_durations = true ]]; then
+      dur_code_name="_${dur_code_name}"
+    fi
+
+    dynamic_category="_${dynamic_category}"
+
+    filename="${filename%.*}"
+    if [[ $filename == *-[0-9]* ]]; then
+      filename="${filename%-*}"
+    elif [[ $filename == *_[0-9]* ]]; then
+      filename="${filename%_*}"
+    fi
+
+    new_filename="${filename}${dur_code_name}${dynamic_category}.wav"
+    
+    if [ -e "${search_path}/${category}/${new_filename}" ]; then
+      # get the last number in the filename after the last underscore or hyphen
+      name_counter=$(ls "${search_path}/${category}" | grep -E "^${filename}${dur_code_name}${dynamic_category}_[0-9]{3}.wav$" | tail -n 1 | sed -E "s/^.*_([0-9]{3}).wav$/\1/")
+      if [[ $name_counter =~ ^0[0-9]+$ ]]; then
+        # remove leading zeros if any
+        name_counter=$(echo $name_counter | sed -E "s/^0+//")
+      else
+        name_counter=0
+      fi
+      name_counter=$((name_counter + 1))
+      name_counter=$(printf "%03d" "$name_counter")
+      new_filename="${filename}${dur_code_name}${dynamic_category}_${name_counter}.wav"
+    fi
   fi
 
   new_filepath="${search_path}/${category}/${new_filename}"

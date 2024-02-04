@@ -278,7 +278,7 @@ for file in "${audio_files[@]}"; do
         name_counter=0
       fi
       name_counter=$((name_counter + 1))
-      name_counter=$(printf "%03d" "$name_counter")
+      name_counter=$(printf "%02d" "$name_counter")
       new_filename="${filename}${dur_code_name}${dynamic_category}_${name_counter}.wav"
     fi
   fi

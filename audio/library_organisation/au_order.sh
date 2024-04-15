@@ -247,17 +247,18 @@ for file in "${audio_files[@]}"; do
     cp "$analysis_file" "$anal_copy"
   fi
 
+  if [ "$categorise_durations" = true ]; then
+    dur_code_name="_${dur_code_name}" 
+  fi
+  dynamic_category="_${dynamic_category}"
+
   mkdir -p "${search_path}/${category}"
   if [ -n "$custom_name" ]; then
     new_filename="${custom_name}_${dur_code_name}_${dynamic_category}_${counter}.wav"
   else
     # filename="${filename%%[0-9_]*}"
     # filename without extension
-    if [[ categorise_durations = true ]]; then
-      dur_code_name="_${dur_code_name}"
-    fi
-
-    dynamic_category="_${dynamic_category}"
+    
 
     filename="${filename%.*}"
     if [[ $filename == *-[0-9]* ]]; then
@@ -278,7 +279,7 @@ for file in "${audio_files[@]}"; do
         name_counter=0
       fi
       name_counter=$((name_counter + 1))
-      name_counter=$(printf "%02d" "$name_counter")
+      name_counter=$(printf "%03d" "$name_counter")
       new_filename="${filename}${dur_code_name}${dynamic_category}_${name_counter}.wav"
     fi
   fi
